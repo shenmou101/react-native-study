@@ -1,7 +1,7 @@
 function sumArray(array) {
   /// TODO 算法写这里
   if(array instanceof Array === false || array.length === 0){
-    array = [0]
+    return 0;
   }
   var max = Math.max.apply(null,array);
   var min = Math.min.apply(null,array);
