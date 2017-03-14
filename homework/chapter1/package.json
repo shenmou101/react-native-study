@@ -1,0 +1,6 @@
+{
+  "name": "quiz1",
+  "dependencies": {
+    "chai": "^3.5.0"
+  }
+}
