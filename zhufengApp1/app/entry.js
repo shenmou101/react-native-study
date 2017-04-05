@@ -1,11 +1,32 @@
 import React,{Component} from 'react'
-import {View,Text,Dimensions,StyleSheet} from 'react-native'
+import {View,Text,Dimensions,StyleSheet,Alert} from 'react-native'
 import {flexCenter} from './basic/style';
 import {Button} from './basic/Button'
 import {COLOR_PRIMARY} from './basic/color';
 
 export class Entry extends Component{
+  onPress(){
+    this.setState({
+      loading: true
+    });
+    setTimeout(() => {
+      Alert.alert('hello','world');
+      this.setState({
+        loading:false
+      })
+    },3000)
+  }
+
+  constructor(){
+    super();
+
+    this.state = {
+      loading:false
+    }
+  }
+
   render (){
+    const {loading} = this.state;
     return (
       <View style={styles.container}>
         <Text>Hi!</Text>
@@ -16,8 +37,11 @@ export class Entry extends Component{
           <View style={{flex:1,backgroundColor:'green'}}></View>
         </View>
 
-        <Button height={42}
+        <Button onPress={this.onPress.bind(this)}
+                height={42}
+                fontSize={14}
                 width={Dimensions.get('window').width-40}
+                loading={loading}
                 backgroundColor={COLOR_PRIMARY}>登录</Button>
         <Button>login</Button>
 
