@@ -1,8 +1,12 @@
 import React,{Component} from 'react'
 import {View,Text,Dimensions,StyleSheet,Alert} from 'react-native'
-import {flexCenter} from './basic/style';
-import {Button} from './basic/Button'
-import {COLOR_PRIMARY} from './basic/color';
+import {
+  flexCenter,
+} from 'basic';
+
+import {
+  ZFbutton
+} from 'domain/component';
 
 export class Entry extends Component{
   onPress(){
@@ -37,13 +41,7 @@ export class Entry extends Component{
           <View style={{flex:1,backgroundColor:'green'}}></View>
         </View>
 
-        <Button onPress={this.onPress.bind(this)}
-                height={42}
-                fontSize={14}
-                width={Dimensions.get('window').width-40}
-                loading={loading}
-                backgroundColor={COLOR_PRIMARY}>登录</Button>
-        <Button>login</Button>
+        <ZFbutton loading={loading} onPress={this.onPress.bind(this)}>登录</ZFbutton>
 
       </View>
     )

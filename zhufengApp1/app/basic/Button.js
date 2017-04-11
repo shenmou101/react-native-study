@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   Platform
 } from "react-native";
-import {flexCenter} from './style'
+import {flexCenter} from 'basic/style'
 
 export class Button extends Component{
   static propTypes = {
@@ -23,7 +23,7 @@ export class Button extends Component{
   }
 
   onPress(){
-    this.props.onPress && this.props.onPress()  //防止调用时不传onPress
+    this.props.onPress && this.props.onPress()  //如果存在则调用 防止调用时不传onPress
   }
 
   render (){
@@ -48,7 +48,7 @@ export class Button extends Component{
       <TouchableOpacity
         onPress={this.onPress.bind(this)}
         style={{backgroundColor,width,height,...flexCenter, borderRadius}}>
-        <Text style={{color:'white', fontSize:fSize}}>{children}</Text>
+        <Text style={{color:'white', fontSize:fSize,fontWeight:Platform.OS === 'android' ? "bold" : "normal"}}>{children}</Text>
       </TouchableOpacity>
     )
   }
