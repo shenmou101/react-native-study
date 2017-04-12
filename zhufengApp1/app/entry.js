@@ -1,55 +1,31 @@
-import React,{Component} from 'react'
-import {View,Text,Dimensions,StyleSheet,Alert} from 'react-native'
+import React,{Component} from 'react';
 import {
-  flexCenter,
-} from 'basic';
+  View,
+  Navigator
+} from  'react-native'
+import {Example1} from 'domain/page/Example1';
+import {Example2} from 'domain/page/Example2';
 
-import {
-  ZFbutton
-} from 'domain/component';
 
 export class Entry extends Component{
-  onPress(){
-    this.setState({
-      loading: true
-    });
-    setTimeout(() => {
-      Alert.alert('hello','world');
-      this.setState({
-        loading:false
-      })
-    },3000)
-  }
-
   constructor(){
     super();
+  }
 
-    this.state = {
-      loading:false
+  _renderScene(route){
+    console.log(route);
+    switch (route.name){
+      case 'Example1':
+        return <Example1 />
+      case 'Example2':
+        return <Example2 />
     }
   }
 
   render (){
-    const {loading} = this.state;
-    return (
-      <View style={styles.container}>
-        <Text>Hi!</Text>
-        <Text>Welcome to React Native</Text>
-        <View style={{height:50,width:100,flexDirection:'row'}}>
-          <View style={{flex:1,backgroundColor:'red'}}></View>
-          <View style={{flex:1,backgroundColor:'blue'}}></View>
-          <View style={{flex:1,backgroundColor:'green'}}></View>
-        </View>
-
-        <ZFbutton loading={loading} onPress={this.onPress.bind(this)}>登录</ZFbutton>
-
-      </View>
-    )
+    return <Navigator
+      initialRoute={{name:'Example1'}}
+      renderScene={this._renderScene}
+    />
   }
 }
-
-const styles = StyleSheet.create({  //StyleSheet预编译器会提高性能
-  container:{
-    flexDirection:'column',...flexCenter,flex:1
-  }
-})
