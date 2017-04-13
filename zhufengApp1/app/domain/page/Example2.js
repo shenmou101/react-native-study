@@ -30,12 +30,16 @@ import {
 import {ZFbutton} from  'domain/component';
 import {flexCenter} from 'basic'
 
-export class Example1 extends Component{
+
+export class Example2 extends Component{
+    _onPress(){
+     this.props.navigator.pop()
+    }
     render(){
         return (
-          <View style={{flex:1,backgroundColor:'pink',...flexCenter}}>
-            <Text>页面Example1</Text>
-            <ZFbutton>返回Example1</ZFbutton>
+          <View style={{flex:1,backgroundColor:'lightgreen',...flexCenter}}>
+            <Text>页面Example2</Text>
+            <ZFbutton onPress={this._onPress.bind(this)}>返回Example1</ZFbutton>
           </View>
         );
     }

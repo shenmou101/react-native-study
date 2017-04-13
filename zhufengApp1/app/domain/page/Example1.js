@@ -31,11 +31,14 @@ import {ZFbutton} from  'domain/component';
 import {flexCenter} from 'basic'
 
 export class Example1 extends Component{
+    _onPress(){
+      this.props.navigator.push({name:'Example2'})
+    }
     render(){
         return (
-          <View style={{flex:1,backgroundColor:'pink',...flexCenter}}>
+          <View style={{flex:1,backgroundColor:'lightpink',...flexCenter}}>
               <Text>页面Example1</Text>
-              <ZFbutton>跳转到Example2</ZFbutton>
+              <ZFbutton onPress={this._onPress.bind(this)}>跳转到Example2</ZFbutton>
           </View>
         );
     }

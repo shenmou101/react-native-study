@@ -12,13 +12,13 @@ export class Entry extends Component{
     super();
   }
 
-  _renderScene(route){
+  _renderScene(route,navigator){
     console.log(route);
     switch (route.name){
       case 'Example1':
-        return <Example1 />
+        return <Example1 navigator={navigator} />
       case 'Example2':
-        return <Example2 />
+        return <Example2 navigator={navigator} />
     }
   }
 
