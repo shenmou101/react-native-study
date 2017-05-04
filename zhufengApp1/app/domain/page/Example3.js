@@ -31,21 +31,30 @@ import {ZFbutton} from  'domain/component';
 import {flexCenter} from 'basic'
 
 
-export class Example2 extends Component{
+export class Example3 extends Component{
     _onPress(){
-     this.props.navigator.pop()
-    }
-    _next(){
-      this.props.navigator.push({name:'Example3'})
+      const routes = this.props.navigator.getCurrentRoutes();
+      /* 方法1 */
+      //先拿到路由栈
+      // console.log(routes);
+      // const routeTo = routes.find( route => route.name === 'Example1' );
+      // this.props.navigator.popToRoute(routeTo)
+
+      /* 方法2 */
+      // const routeTo = routes.find( route => route.name === 'Example1' );
+      // this.props.navigator.resetTo(routeTo)
+
+      /* 方法3 */
+      this.props.navigator.immediatelyResetRouteStack([{name:'Example1'},{name:'Example3'}]); //又创建了两张已存在过的页面 性能问题
+      setTimeout( (() => {
+        this.props.navigator.pop()
+      }).bind(this),10 )   //此处在特殊机型可能存在bug
     }
     render(){
         return (
-          <View style={{flex:1,backgroundColor:'lightgreen',...flexCenter}}>
-            <Text>页面Example2</Text>
-            <ZFbutton onPress={this._onPress.bind(this)}>返回Example1</ZFbutton>
-            <View style={{marginTop:10}}>
-              <ZFbutton onPress={this._next.bind(this)}>购买</ZFbutton>
-            </View>
+          <View style={{flex:1,backgroundColor:'lightblue',...flexCenter}}>
+            <Text>页面Example3</Text>
+            <ZFbutton onPress={this._onPress.bind(this)}>支付</ZFbutton>
           </View>
         );
     }

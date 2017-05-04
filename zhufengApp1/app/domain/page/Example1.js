@@ -38,7 +38,7 @@ export class Example1 extends Component{
         return (
           <View style={{flex:1,backgroundColor:'lightpink',...flexCenter}}>
               <Text>页面Example1</Text>
-              <ZFbutton onPress={this._onPress.bind(this)}>跳转到Example2</ZFbutton>
+              <ZFbutton onPress={this._onPress.bind(this)}>登陆</ZFbutton>
           </View>
         );
     }
