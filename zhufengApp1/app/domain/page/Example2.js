@@ -29,14 +29,14 @@ import {
 } from 'react-native';
 import {ZFbutton} from  'domain/component';
 import {flexCenter} from 'basic'
-
+import {Routes} from 'domain/page';
 
 export class Example2 extends Component{
     _onPress(){
      this.props.navigator.pop()
     }
     _next(){
-      this.props.navigator.push({name:'Example3'})
+      this.props.navigator.push(Routes.Example3)
     }
     render(){
         return (

@@ -28,7 +28,8 @@ import {
   Text
 } from 'react-native';
 import {ZFbutton} from  'domain/component';
-import {flexCenter} from 'basic'
+import {flexCenter} from 'basic';
+import {Routes} from 'domain/page'
 
 
 export class Example3 extends Component{
@@ -41,14 +42,14 @@ export class Example3 extends Component{
       // this.props.navigator.popToRoute(routeTo)
 
       /* 方法2 */
-      // const routeTo = routes.find( route => route.name === 'Example1' );
-      // this.props.navigator.resetTo(routeTo)
+      const routeTo = routes.find( route => route.name === 'Example1' );
+      this.props.navigator.resetTo(Routes.Example1)
 
       /* 方法3 */
-      this.props.navigator.immediatelyResetRouteStack([{name:'Example1'},{name:'Example3'}]); //又创建了两张已存在过的页面 性能问题
-      setTimeout( (() => {
-        this.props.navigator.pop()
-      }).bind(this),10 )   //此处在特殊机型可能存在bug
+      // this.props.navigator.immediatelyResetRouteStack([{name:'Example1'},{name:'Example3'}]); //又创建了两张已存在过的页面 性能问题
+      // setTimeout( (() => {
+      //   this.props.navigator.pop()
+      // }).bind(this),10 )   //此处在特殊机型可能存在bug
     }
     render(){
         return (
