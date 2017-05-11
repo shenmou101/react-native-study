@@ -28,50 +28,74 @@ import {
   Text,
   Image,
   Dimensions,
-  ScrollView
+  StyleSheet
 } from 'react-native'
-import {format_currency} from 'basic'
+import {format_currency, ListView} from 'basic'
 import {COLOR_TITLE,COLOR_TEXT_LIGHT,COLOR_PRICE} from 'domain/def'
+
+const CARD_HEIGHT = 268;
+/*
+ * curry function
+ * 同时承担了计算下一个状态和初始状态的函数
+ * @param N 卡片数量 定值
+ * @param L 卡片高度 定值
+ * @param H 滚动区域的高度 定值
+ * @param y 滚动的距离 变值
+ * @return {p:*, q:*, H1:*, H3:*}
+ * */
+const nextListViewState = (N,L,H) => {
+  return y => {   //y是用户滚动时产生的 现用现取
+    const p = Math.floor( y / L );
+    const q = Math.floor( ( y + H ) / L - 1);
+    const H1 = p * L;
+    const H3 = ( N - ( q + 1 ) ) * L;
+    return {
+      p,
+      q,
+      H1,
+      H3
+    }
+  }
+};
 
 export class Home extends Component{
   constructor(){
     super();
     const course_gen = () => {
       return {
-        course:{
-          image: 'http://img14.poco.cn/mypoco/myphoto/20130403/14/65939719201304031356532142558851773_032.jpg',
-          title: '顶级大神教你写node.js',
-          author: '张仁阳',
-          description: '顶级大神教你写node.js，从零开始，循序渐进。。。。。。',
-          price: Math.random() * 5000 + 5000
-        }
-      }
-    };
-    let courses = [];
-    for(i=0;i<10000;i++){
-      courses.push(course_gen())
-    }
-    this.state = {
-      course:{
         image: 'http://img14.poco.cn/mypoco/myphoto/20130403/14/65939719201304031356532142558851773_032.jpg',
         title: '顶级大神教你写node.js',
         author: '张仁阳',
         description: '顶级大神教你写node.js，从零开始，循序渐进。。。。。。',
-        price: 10000
+        price: Math.random() * 5000 + 5000
       }
+    };
+    let courses = [];
+    for(i=0;i<1000;i++){
+      courses.push(course_gen())
+    }
+    this.state = {
+      courses: courses,
     }
   }
 
+  _renderItem(course, i){
+    return (<CourseCard {...course} />)
+  }
   render(){
-    const {course} = this.state;
+    // const courses = this.state.courses;
+    // const visibleCourses = [];
+    // for(let i = p;i <= q;i++){
+    //   visibleCourses.push(courses[i])
+    // }
+
     return (
-      <ScrollView>
-        <CourseCard {...course} />
-        <CourseCard {...course} />
-        <CourseCard {...course} />
-        <CourseCard {...course} />
-        <CourseCard {...course} />
-      </ScrollView>
+      <ListView
+        renderItem={this._renderItem}
+        data={this.state.courses}
+        ItemHeight={268}
+        height={Dimensions.get('window').height-54}
+      />
     )
   }
 }
@@ -79,19 +103,29 @@ class CourseCard extends Component{
   render(){
     const W = Dimensions.get('window').width;
     const {image,title,author,description,price} = this.props;
-    return <View style={{marginLeft:10,marginRight:10,marginTop:15,paddingBottom:10,overflow:'hidden',borderWidth:1,borderColor:'#ddd',borderRadius:5}}>
-      <Image
-        source={{uri:image}}
-        style={{width:W-20,height:(W-20)*0.3,borderTopLeftRadius:5,borderTopRightRadius:5,}}
-      />
-      <Title>{title}</Title>
-      <Author label="讲师">{author}</Author>
-      <Description>{description}</Description>
-      <Price>{price}</Price>
-    </View>
+    return (
+      <View style={courseStyle.cardContainer}>
+        <Image
+          source={{uri:image}}
+          style={{width:W-20,height:(W-20)*0.3,borderTopLeftRadius:5,borderTopRightRadius:5,}}
+        />
+        <Title>{title}</Title>
+        <Author label="讲师">{author}</Author>
+        <Description>{description}</Description>
+        <Price>{price}</Price>
+      </View>
+    )
   }
 }
 
+const courseStyle = StyleSheet.create({
+  cardContainer:{
+    marginLeft:10,marginRight:10,marginBottom:15,paddingBottom:10,
+    overflow:'hidden',borderWidth:1,borderColor:'#ddd',borderRadius:5,
+    height:CARD_HEIGHT,
+    backgroundColor:'white',
+  }
+});
 const Paragraph = {
   paddingLeft:20,
   paddingRight:20,
