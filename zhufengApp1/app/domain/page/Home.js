@@ -71,7 +71,7 @@ export class Home extends Component{
       }
     };
     let courses = [];
-    for(i=0;i<1000;i++){
+    for(i=0;i<20;i++){
       courses.push(course_gen())
     }
     this.state = {
@@ -120,7 +120,7 @@ class CourseCard extends Component{
 
 const courseStyle = StyleSheet.create({
   cardContainer:{
-    marginLeft:10,marginRight:10,marginBottom:15,paddingBottom:10,
+    marginLeft:10,marginRight:10,paddingBottom:10,
     overflow:'hidden',borderWidth:1,borderColor:'#ddd',borderRadius:5,
     height:CARD_HEIGHT,
     backgroundColor:'white',
@@ -130,7 +130,7 @@ const Paragraph = {
   paddingLeft:20,
   paddingRight:20,
   marginTop:10
-}
+};
 
 const Title = ({children}) => {
   return <Text style={{...Paragraph, color:COLOR_TITLE, fontSize:18, fontWeight:'bold'}}>{children}</Text>
@@ -155,4 +155,4 @@ const Description = ({children}) => {
 
 const Price = ({children}) => {
   return <Text style={{...Paragraph,color:COLOR_PRICE, fontSize:18, fontWeight:'bold'}}>￥{format_currency(children)}</Text>
-}
+};

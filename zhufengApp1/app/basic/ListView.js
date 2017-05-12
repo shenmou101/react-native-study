@@ -31,30 +31,52 @@ import {ScrollView,View} from 'react-native';
 
 /*
  * curry function
- * 同时承担了计算下一个状态和初始状态的函数
- * @param N 卡片数量 定值
- * @param L 卡片高度 定值
+ * 滚动替换，同时承担了计算下一个状态和初始状态的函数
+ * @param cards 卡片列表
+ * @param itemHeights 卡片高度列表 变值
  * @param H 滚动区域的高度 定值
+ * @param S 指定渲染卡片数量 定值
  * @param y 滚动的距离 变值
  * @return {p:*, q:*, H1:*, H3:*}
  * */
-const nextListViewState = (N,L,H) => {
-  return y => {   //y是用户滚动时产生的 现用现取
-    const p = Math.floor( y / L );
-    const q = Math.floor( ( y + H ) / L - 1);
-    const H1 = p * L;
-    const H3 = ( N - ( q + 1 ) ) * L;
-    return {
-      p,
-      q,
-      H1,
-      H3
+const nextReplaceScrollState = (cards, itemHeights, H, S, y) => {
+  // p : 开始的卡片 第一个top小于(y - H)的卡片
+  let sum = 0;
+  let p = -1;
+  for(let i = 0; i < itemHeights.length; i++){
+    if( sum < y - H ){    // ????
+      p = cards[i].id;
+      break
     }
+    sum += itemHeights[cards[i].id];
+  }
+
+  // q : 结束的卡片 （q = p + S ）
+  const q = p + S - 1;
+
+  // H1 : 顶部替换盒子的高度 top(p)   sum ( 1 + ... + p-1 )
+  const lst1 = cards
+    .filter(card => card.id < p)
+    .map(card => itemHeights[card.id]);
+  const H1 = lst1.length > 0 ? lst1.reduce((h1, h2) =>  h1 + h2 ) : 0;
+
+  const lst3 = cards
+    .filter(card => card.id > q)
+    .map(card => itemHeights[card.id]);
+  const H3 = lst3.length > 0 ? lst3.reduce( (h1, h2) => h1 + h2 ) : 0;
+
+  console.log(p,q,H1,H3);
+  return {
+    p,
+    q,
+    H1,
+    H3
   }
 };
+
 export class ListView extends Component{
 
-  defaultProps = {
+  static defaultProps = {
     displaySize: 10 //默认同时渲染10张卡片
   }
 
@@ -63,12 +85,19 @@ export class ListView extends Component{
 
     this.ItemHeights = [];
     const { ItemHeight: L, height: H} = props;
-    const N = props.data.length;
-    const nextStateFunc = nextListViewState(N,L,H);
-    this.nextStateFunc = nextStateFunc;
+    // const N = props.data.length;
+    // const nextStateFunc = nextListViewState(N,L,H);
+    // this.nextStateFunc = nextStateFunc;
     this.state = {
-      ...nextStateFunc(0)
-    }
+      data:[],
+      //...nextStateFunc(0)
+    };
+
+    //this.setState() 会调render 导致报错
+  }
+
+  componentDidMount(){
+    this.append(this.props.data)
   }
 
   _itemLayout(i){
@@ -80,60 +109,82 @@ export class ListView extends Component{
   //   console.log(e.nativeEvent.layout)
   // }
 
-  _renderItem(item, i){
-    return <View key={i} onLayout={this._itemLayout(i).bind(this)}>
-      {this.props.renderItem(item, i)}
+  _renderItem({item, id}){  // 此处的{item,id}是(item,i)中的item  注意别混淆
+    return <View key={id} onLayout={this._itemLayout(id).bind(this)}>
+      {this.props.renderItem(item, id)}
     </View>
   }
 
+  static id_counter = 0;
   /*
   * 向ListView中加载项
   * @param list
   * */
   append(list){
+
+    // [{name : 'xx', title : 'xxxx'}]
+    // [{id: 1 , item : 'xxxx'}]
+
+    const nList = list.map((item, i) => {
+      return {
+        id: ListView.id_counter++,
+        item
+      }
+    });
+
+    const I = setInterval((() => {
+      if(this.ItemHeights[ListView.id_counter]){
+        console.log(this.ItemHeights,666);
+        clearInterval(I);
+        this.setState({
+          ...nextReplaceScrollState(this.state.data, this.ItemHeights, this.props.height, this.props.displaySize, 0)
+        })
+      }
+    }).bind(this),1000);
+
     this.setState({
       //将新卡片append在底部
-      data : [...data,...list],
+      data : [...this.state.data,...list],
+      newlyAdded : nList,
       //将滚动替换过程锁定 (因为部分卡片高度未知)
       scrollLock:true
     },(() => {
       //新卡片都渲染完成后解锁滚动替换方法
-      this.setState({
+      /*this.setState({
         scrollLock:false
-      })
+      })*/
     }).bind(this))
 
 
   }
 
   _scroll(e){
-    console.log(e.nativeEvent.contentOffset.y)
-    this.setState({
-      ...this.nextStateFunc(e.nativeEvent.contentOffset.y)
-    })
+    // console.log(e.nativeEvent.contentOffset.y)
+    // this.setState({
+    //   ...this.nextStateFunc(e.nativeEvent.contentOffset.y)
+    // })
   }
 
   render(){
     const {data} = this.props;
-    const {p, q, H1, H3} = this.state;
+    const {p, q, H1, H3, newlyAdded, scrollLock} = this.state;
 
-    const visibleData = data.filter((course,i)=>{
-      if(i >= p && i <= q){
-        return true
-      }
-      return false
-    });
+    // const visibleData = data.filter((course,i)=>{
+    //   if(i >= p && i <= q){
+    //     return true
+    //   }
+    //   return false
+    // });
 
     return (
       <ScrollView
         onScroll={this._scroll.bind(this)}
         scrollEventThrottle={15}
       >
-        <View style={{height: H1}}></View>
         {
-          visibleData.map( this._renderItem.bind(this) )
+          scrollLock &&
+          newlyAdded.map( this._renderItem.bind(this) )
         }
-        <View style={{height: H3}}></View>
       </ScrollView>
     )
   }
