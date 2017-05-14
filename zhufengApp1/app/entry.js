@@ -41,7 +41,6 @@ export class Entry extends Component{
   _renderNavBar(){
     const routeMapper = {
       LeftButton:(route,navigator,index,navState) => {
-        console.log(index);
         if(index === 0){
           return null
         }

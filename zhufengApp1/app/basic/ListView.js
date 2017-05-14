@@ -40,11 +40,12 @@ import {ScrollView,View} from 'react-native';
  * @return {p:*, q:*, H1:*, H3:*}
  * */
 const nextReplaceScrollState = (cards, itemHeights, H, S, y) => {
+  console.log({cards, itemHeights, H, S, y})
   // p : 开始的卡片 第一个top小于(y - H)的卡片
   let sum = 0;
   let p = -1;
   for(let i = 0; i < itemHeights.length; i++){
-    if( sum < y - H ){    // ????
+    if( sum > y - H ){    // ????
       p = cards[i].id;
       break
     }
@@ -65,7 +66,7 @@ const nextReplaceScrollState = (cards, itemHeights, H, S, y) => {
     .map(card => itemHeights[card.id]);
   const H3 = lst3.length > 0 ? lst3.reduce( (h1, h2) => h1 + h2 ) : 0;
 
-  console.log(p,q,H1,H3);
+  console.log({p,q,H1,H3},777);
   return {
     p,
     q,
@@ -84,7 +85,7 @@ export class ListView extends Component{
     super();
 
     this.ItemHeights = [];
-    const { ItemHeight: L, height: H} = props;
+    // const { ItemHeight: L, height: H} = props;
     // const N = props.data.length;
     // const nextStateFunc = nextListViewState(N,L,H);
     // this.nextStateFunc = nextStateFunc;
@@ -127,24 +128,24 @@ export class ListView extends Component{
 
     const nList = list.map((item, i) => {
       return {
-        id: ListView.id_counter++,
+        id: ++ListView.id_counter,
         item
       }
     });
 
     const I = setInterval((() => {
       if(this.ItemHeights[ListView.id_counter]){
-        console.log(this.ItemHeights,666);
         clearInterval(I);
         this.setState({
-          ...nextReplaceScrollState(this.state.data, this.ItemHeights, this.props.height, this.props.displaySize, 0)
+          ...nextReplaceScrollState(this.state.data, this.ItemHeights, this.props.height, this.props.displaySize, 0),
+          scrollLock:false
         })
       }
     }).bind(this),1000);
 
     this.setState({
       //将新卡片append在底部
-      data : [...this.state.data,...list],
+      data : [...this.state.data,...nList],
       newlyAdded : nList,
       //将滚动替换过程锁定 (因为部分卡片高度未知)
       scrollLock:true
@@ -166,21 +167,25 @@ export class ListView extends Component{
   }
 
   render(){
-    const {data} = this.props;
-    const {p, q, H1, H3, newlyAdded, scrollLock} = this.state;
+    const {p, q, H1, H3, newlyAdded, scrollLock, data} = this.state;
 
-    // const visibleData = data.filter((course,i)=>{
-    //   if(i >= p && i <= q){
-    //     return true
-    //   }
-    //   return false
-    // });
+    const visibleData = data.filter((item,id)=>{
+      if(id >= p && id <= q){
+        return true
+      }
+      return false
+    });
 
     return (
       <ScrollView
         onScroll={this._scroll.bind(this)}
         scrollEventThrottle={15}
       >
+        <View style={{height: H1}}></View>
+        {
+          visibleData.map(this._renderItem.bind(this))
+        }
+        <View style={{height: H3}}></View>
         {
           scrollLock &&
           newlyAdded.map( this._renderItem.bind(this) )

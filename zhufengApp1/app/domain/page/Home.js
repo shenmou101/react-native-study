@@ -34,29 +34,6 @@ import {format_currency, ListView} from 'basic'
 import {COLOR_TITLE,COLOR_TEXT_LIGHT,COLOR_PRICE} from 'domain/def'
 
 const CARD_HEIGHT = 268;
-/*
- * curry function
- * 同时承担了计算下一个状态和初始状态的函数
- * @param N 卡片数量 定值
- * @param L 卡片高度 定值
- * @param H 滚动区域的高度 定值
- * @param y 滚动的距离 变值
- * @return {p:*, q:*, H1:*, H3:*}
- * */
-const nextListViewState = (N,L,H) => {
-  return y => {   //y是用户滚动时产生的 现用现取
-    const p = Math.floor( y / L );
-    const q = Math.floor( ( y + H ) / L - 1);
-    const H1 = p * L;
-    const H3 = ( N - ( q + 1 ) ) * L;
-    return {
-      p,
-      q,
-      H1,
-      H3
-    }
-  }
-};
 
 export class Home extends Component{
   constructor(){
@@ -74,6 +51,7 @@ export class Home extends Component{
     for(i=0;i<20;i++){
       courses.push(course_gen())
     }
+    console.log(courses,'courses')
     this.state = {
       courses: courses,
     }
