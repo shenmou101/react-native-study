@@ -28,27 +28,28 @@ import {
   Text,
   Image,
   Dimensions,
-  StyleSheet
+  StyleSheet,
+  ActivityIndicator
 } from 'react-native'
-import {format_currency, ListView} from 'basic'
+import {format_currency, ListView, flexCenter} from 'basic'
 import {COLOR_TITLE,COLOR_TEXT_LIGHT,COLOR_PRICE} from 'domain/def'
 
-const CARD_HEIGHT = 268;
+const course_gen = () => {
+  return {
+    image: 'http://img14.poco.cn/mypoco/myphoto/20130403/14/65939719201304031356532142558851773_032.jpg',
+    title: '顶级大神教你写node.js',
+    author: '张仁阳',
+    description: '顶级大神教你写node.js，从零开始，循序渐进。。。。。。',
+    price: Math.random() * 5000 + 5000
+  }
+};
 
 export class Home extends Component{
   constructor(){
     super();
-    const course_gen = () => {
-      return {
-        image: 'http://img14.poco.cn/mypoco/myphoto/20130403/14/65939719201304031356532142558851773_032.jpg',
-        title: '顶级大神教你写node.js',
-        author: '张仁阳',
-        description: '顶级大神教你写node.js，从零开始，循序渐进。。。。。。',
-        price: Math.random() * 5000 + 5000
-      }
-    };
+
     let courses = [];
-    for(i=0;i<20;i++){
+    for(i=0;i<10;i++){
       courses.push(course_gen())
     }
     this.state = {
@@ -57,8 +58,39 @@ export class Home extends Component{
   }
 
   _renderItem(course, i){
-    return (<CourseCard {...course} />)
+    return (
+      <CourseCard {...course} />
+    )
   }
+
+  _loadMore(y){
+
+    this.y = y;
+    this.loading = true;
+    //假设一个网络请求
+    setTimeout((() => {
+      let courses = [];
+      for(i=0;i<10;i++){
+        courses.push(course_gen())
+      }
+      this.refs.listView.append(courses);
+      this.loading = false;
+    }).bind(this), 2000)
+  }
+
+  _renderBottomIndicator(){
+    const txt = (this.y > 100) ? '释放加载更多' : '下拉加载更多';
+    return (
+      <View style={{height:42,...flexCenter}}>
+        { this.loading ?
+          <Text>正在加载...</Text>
+          :
+          <Text>{txt}</Text>
+        }
+      </View>
+    )
+  }
+
   render(){
     // const courses = this.state.courses;
     // const visibleCourses = [];
@@ -68,11 +100,13 @@ export class Home extends Component{
 
     return (
       <ListView
+        ref="listView"
         renderItem={this._renderItem}
-        data={this.state.courses}
-        ItemHeight={268}
-        height={Dimensions.get('window').height-54}
+        initialData={this.state.courses}
+        onScrollToBottom={this._loadMore.bind(this)}
+        renderBottomIndicator={this._renderBottomIndicator.bind(this)}
       />
+
     )
   }
 }
@@ -97,9 +131,8 @@ class CourseCard extends Component{
 
 const courseStyle = StyleSheet.create({
   cardContainer:{
-    marginLeft:10,marginRight:10,paddingBottom:10,
+    marginLeft:10,marginRight:10,marginBottom:10,paddingBottom:10,
     overflow:'hidden',borderWidth:1,borderColor:'#ddd',borderRadius:5,
-    height:CARD_HEIGHT,
     backgroundColor:'white',
   }
 });

@@ -23,7 +23,8 @@
  */
 
 import React, {Component} from 'react';
-import {ScrollView,View} from 'react-native';
+import {ScrollView,View,Dimensions,ActivityIndicator} from 'react-native';
+import {flexCenter} from 'basic'
 
 // 通用场景
 // 先给用户渲染20项
@@ -44,7 +45,7 @@ const nextReplaceScrollState = (cards, itemHeights, H, S, y) => {
   // p : 开始的卡片 第一个top小于(y - H)的卡片
   let sum = 0;
   let p = -1;
-  for(let i = 0; i < itemHeights.length; i++){
+  for(let i = 0; i < cards.length; i++){
     if( sum > y - H ){    // ????
       p = cards[i].id;
       break
@@ -66,7 +67,7 @@ const nextReplaceScrollState = (cards, itemHeights, H, S, y) => {
     .map(card => itemHeights[card.id]);
   const H3 = lst3.length > 0 ? lst3.reduce( (h1, h2) => h1 + h2 ) : 0;
 
-  console.log({p,q,H1,H3},777);
+  //console.log({p,q,H1,H3},777);
   return {
     p,
     q,
@@ -78,46 +79,39 @@ const nextReplaceScrollState = (cards, itemHeights, H, S, y) => {
 export class ListView extends Component{
 
   static defaultProps = {
-    displaySize: 10 //默认同时渲染10张卡片
-  }
+    displaySize: 10, //默认同时渲染10张卡片
+    renderBottomIndicator : () => {
+      return (
+        <View style={{height:42,...flexCenter}}>
+          <ActivityIndicator />
+        </View>
+      )
+    }
+  };
 
   constructor(props){
     super();
 
+    //滚动距离
     this.y = 0;
+
+    //所有的卡片高度
     this.ItemHeights = [];
-    // const { ItemHeight: L, height: H} = props;
-    // const N = props.data.length;
-    // const nextStateFunc = nextListViewState(N,L,H);
-    // this.nextStateFunc = nextStateFunc;
+
+    // ID计数器
+    this.id_counter = 0;
+
     this.state = {
       data:[],
-      //...nextStateFunc(0)
     };
 
     //this.setState() 会调render 导致报错
   }
 
   componentDidMount(){
-    this.append(this.props.data)
+    this.append(this.props.initialData)
   }
 
-  _itemLayout(i){
-    return ({nativeEvent:{layout}}) => {
-      this.ItemHeights[i] = layout.height;
-    }
-  }
-  // _itemLayout(e){
-  //   console.log(e.nativeEvent.layout)
-  // }
-
-  _renderItem({item, id}){  // 此处的{item,id}是(item,i)中的item  注意别混淆
-    return <View key={id} onLayout={this._itemLayout(id).bind(this)}>
-      {this.props.renderItem(item, id)}
-    </View>
-  }
-
-  static id_counter = 0;
   /*
   * 向ListView中加载项
   * @param list
@@ -126,22 +120,23 @@ export class ListView extends Component{
 
     // [{name : 'xx', title : 'xxxx'}]
     // [{id: 1 , item : 'xxxx'}]
-
+    // 分配ID
     const nList = list.map((item, i) => {
       return {
-        id: ++ListView.id_counter,
+        id: ++this.id_counter,
         item
       }
     });
 
     const I = setInterval((() => {
-      if(this.ItemHeights[ListView.id_counter]){
+      //渲染完成
+      if(this.ItemHeights[this.id_counter]){
         clearInterval(I);
         this.setState({
-          ...nextReplaceScrollState(this.state.data, this.ItemHeights, this.props.height, this.props.displaySize, this.y),
+          ...nextReplaceScrollState(this.state.data, this.ItemHeights, this.height, this.props.displaySize, this.y),
           scrollLock:false,
           newlyAdded: []
-        })
+        });
       }
     }).bind(this),1000);
 
@@ -151,38 +146,71 @@ export class ListView extends Component{
       newlyAdded : nList,
       //将滚动替换过程锁定 (因为部分卡片高度未知)
       scrollLock:true
-    },(() => {
-      //新卡片都渲染完成后解锁滚动替换方法
-      /*this.setState({
-        scrollLock:false
-      })*/
-    }).bind(this))
+    })
 
 
   }
 
+
+
   _scroll(e){
+    //滚动距离
     this.y = e.nativeEvent.contentOffset.y;
+    //是否已经滚动到底部
+    const atBottom = (this.y + this.height >= e.nativeEvent.contentSize.height);
+    console.log(this.y, this.height, e.nativeEvent.contentSize.height);
+
+    if(atBottom){
+      //加载数据
+      this.props.onScrollToBottom(this.y + this.height - e.nativeEvent.contentSize.height)
+    }
+
     if(!this.state.scrollLock){
       this.setState({
-        ...nextReplaceScrollState(this.state.data, this.ItemHeights, this.props.height, this.props.displaySize, this.y)
+        ...nextReplaceScrollState(this.state.data, this.ItemHeights, this.height, this.props.displaySize, this.y)
       })
     }
+  }
+
+  _itemLayout(i){
+    return ({nativeEvent:{layout}}) => {
+      this.ItemHeights[i] = layout.height;
+    }
+  }
+
+  _layout({nativeEvent : {layout}}){
+    this.height = layout.height;
+    console.log('scroll view height ' + layout.height, Dimensions.get('window').height)
+  }
+
+  _renderItem({item, id}){  // 此处的{item,id}是(item,i)中的item  注意别混淆
+    return <View key={id} onLayout={this._itemLayout(id).bind(this)}>
+      {this.props.renderItem(item, id)}
+    </View>
   }
 
   render(){
     const {p, q, H1, H3, newlyAdded, scrollLock, data} = this.state;
 
-    const visibleData = (newlyAdded && newlyAdded.length > 0) ? newlyAdded : data.filter((item,id)=>{
+    let visibleData = (newlyAdded && newlyAdded.length > 0) ? newlyAdded : data.filter((item,id)=>{
       if(id >= p && id <= q){
         return true
       }
       return false
     });
 
+    if(newlyAdded && newlyAdded.length > 0){
+      visibleData = [
+        ...visibleData,
+        ...newlyAdded.filter(x => !visibleData.find(t => x.id === t.id))
+      ]
+    }
+
     return (
       <ScrollView
+        onLayout = {this._layout.bind(this)}
         onScroll={this._scroll.bind(this)}
+        onResponderRelease={this._scrollRelease}
         scrollEventThrottle={15}
       >
         <View style={{height: H1}}></View>
@@ -190,6 +218,7 @@ export class ListView extends Component{
           visibleData.map(this._renderItem.bind(this))
         }
         <View style={{height: H3}}></View>
+        {this.props.renderBottomIndicator()}
       </ScrollView>
     )
   }
