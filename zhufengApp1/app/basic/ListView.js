@@ -84,6 +84,7 @@ export class ListView extends Component{
   constructor(props){
     super();
 
+    this.y = 0;
     this.ItemHeights = [];
     // const { ItemHeight: L, height: H} = props;
     // const N = props.data.length;
@@ -137,8 +138,9 @@ export class ListView extends Component{
       if(this.ItemHeights[ListView.id_counter]){
         clearInterval(I);
         this.setState({
-          ...nextReplaceScrollState(this.state.data, this.ItemHeights, this.props.height, this.props.displaySize, 0),
-          scrollLock:false
+          ...nextReplaceScrollState(this.state.data, this.ItemHeights, this.props.height, this.props.displaySize, this.y),
+          scrollLock:false,
+          newlyAdded: []
         })
       }
     }).bind(this),1000);
@@ -160,16 +162,18 @@ export class ListView extends Component{
   }
 
   _scroll(e){
-    // console.log(e.nativeEvent.contentOffset.y)
-    // this.setState({
-    //   ...this.nextStateFunc(e.nativeEvent.contentOffset.y)
-    // })
+    this.y = e.nativeEvent.contentOffset.y;
+    if(!this.state.scrollLock){
+      this.setState({
+        ...nextReplaceScrollState(this.state.data, this.ItemHeights, this.props.height, this.props.displaySize, this.y)
+      })
+    }
   }
 
   render(){
     const {p, q, H1, H3, newlyAdded, scrollLock, data} = this.state;
 
-    const visibleData = data.filter((item,id)=>{
+    const visibleData = (newlyAdded && newlyAdded.length > 0) ? newlyAdded : data.filter((item,id)=>{
       if(id >= p && id <= q){
         return true
       }
@@ -186,10 +190,6 @@ export class ListView extends Component{
           visibleData.map(this._renderItem.bind(this))
         }
         <View style={{height: H3}}></View>
-        {
-          scrollLock &&
-          newlyAdded.map( this._renderItem.bind(this) )
-        }
       </ScrollView>
     )
   }

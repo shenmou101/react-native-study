@@ -51,7 +51,6 @@ export class Home extends Component{
     for(i=0;i<20;i++){
       courses.push(course_gen())
     }
-    console.log(courses,'courses')
     this.state = {
       courses: courses,
     }
