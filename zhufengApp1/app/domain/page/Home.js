@@ -29,14 +29,15 @@ import {
   Image,
   Dimensions,
   StyleSheet,
-  ActivityIndicator
+  ActivityIndicator,
+  RefreshControl
 } from 'react-native'
 import {format_currency, ListView, flexCenter} from 'basic'
 import {COLOR_TITLE,COLOR_TEXT_LIGHT,COLOR_PRICE} from 'domain/def'
 
 const course_gen = () => {
   return {
-    image: 'http://img14.poco.cn/mypoco/myphoto/20130403/14/65939719201304031356532142558851773_032.jpg',
+    image: require('./images/slide1.jpg'),
     title: '顶级大神教你写node.js',
     author: '张仁阳',
     description: '顶级大神教你写node.js，从零开始，循序渐进。。。。。。',
@@ -49,62 +50,88 @@ export class Home extends Component{
     super();
 
     let courses = [];
-    for(i=0;i<10;i++){
+    for(let i=0;i<10;i++){
       courses.push(course_gen())
     }
     this.state = {
       courses: courses,
+      loading: false
     }
   }
 
-  _renderItem(course, i){
+  _renderItem(course, i){ //若有course则应用
     return (
       <CourseCard {...course} />
     )
   }
 
-  _loadMore(y){
-
+  _onScrollToBottom(y){
     this.y = y;
-    this.loading = true;
-    //假设一个网络请求
-    setTimeout((() => {
-      let courses = [];
-      for(i=0;i<10;i++){
-        courses.push(course_gen())
-      }
-      this.refs.listView.append(courses);
-      this.loading = false;
-    }).bind(this), 2000)
   }
 
   _renderBottomIndicator(){
-    const txt = (this.y > 100) ? '释放加载更多' : '下拉加载更多';
+    const indicator = this.y < 100 ? <ScrollIndicator image={require('./arrow_down.png')}>下拉加载更多</ScrollIndicator> : <ScrollIndicator image={require('./arrow_up.png')}>释放加载更多</ScrollIndicator>
     return (
       <View style={{height:42,...flexCenter}}>
-        { this.loading ?
-          <Text>正在加载...</Text>
+        { this.state.loading ?
+          <ActivityIndicator />
           :
-          <Text>{txt}</Text>
+          indicator
         }
       </View>
     )
   }
 
-  render(){
-    // const courses = this.state.courses;
-    // const visibleCourses = [];
-    // for(let i = p;i <= q;i++){
-    //   visibleCourses.push(courses[i])
-    // }
+  _release(){
+    if(this.y > 100 && !this.loading){
+      this.setState({loading : true}, (() => {
 
+      }).bind(this));
+      //假设一个网络请求
+      setTimeout((() => {
+        let courses = [];
+        for(let i=0;i<10;i++){
+          courses.push(course_gen())
+        }
+        this.refs.listView.append(courses);
+        this.setState({
+          loading : false
+        })
+      }).bind(this), 2000)
+    }
+    console.log('release at : ' + this.y)
+  }
+
+  _refresh(){
+    if(!this.state.loading){
+      this.setState({loading : true},(() => {
+        setTimeout((() => {
+          const courses = [];
+          for(let i=0;i<10;i++){
+            courses.push(course_gen())
+          }
+          this.refs.listView.reset(courses);
+          this.setState({
+            loading : false
+          })
+        }).bind(this), 2000)
+      }).bind(this))
+    }
+  }
+
+  render(){
+    const loading = this.state.loading;
     return (
       <ListView
         ref="listView"
         renderItem={this._renderItem}
         initialData={this.state.courses}
-        onScrollToBottom={this._loadMore.bind(this)}
+        onScrollToBottom={this._onScrollToBottom.bind(this)}
+        onResponderRelease={this._release.bind(this)}
         renderBottomIndicator={this._renderBottomIndicator.bind(this)}
+        refreshControl={
+          <RefreshControl refreshing={false} onRefresh={this._refresh.bind(this)} />
+        }
       />
 
     )
@@ -117,7 +144,7 @@ class CourseCard extends Component{
     return (
       <View style={courseStyle.cardContainer}>
         <Image
-          source={{uri:image}}
+          source={image}
           style={{width:W-20,height:(W-20)*0.3,borderTopLeftRadius:5,borderTopRightRadius:5,}}
         />
         <Title>{title}</Title>
@@ -155,6 +182,15 @@ const Title = ({children}) => {
 *  }
 *
 * */
+const ScrollIndicator = ({children, image}) => {
+  return (
+    <View style={{flexDirection: 'row',...flexCenter}}>
+      <Text>{children}</Text>
+      <Image source={image} style={{width: 18, height: 18}} />
+    </View>
+  )
+};
+
 const Author = ({label,children}) => {
   return <Text style={{...Paragraph,color:COLOR_TEXT_LIGHT}}>{label}:{children}</Text>
 };

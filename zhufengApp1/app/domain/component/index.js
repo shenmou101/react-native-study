@@ -3,3 +3,4 @@
  */
 export * from './ZFbutton'
 export * from './navbar/ZNavbar'
+export * from './tabbar/Tabbar'

@@ -44,5 +44,9 @@ export const Routes = {
     name: 'Home',
     Title: '首页',
     get Component(){ return require('./Home').Home }
+  },
+  Tabs:{
+    name:'Tabs',
+    get Component(){return require('./Tabs').Tabs}
   }
 };

@@ -65,7 +65,7 @@ export class Entry extends Component{
   render (){
     return <Navigator
       ref="navigator"
-      initialRoute={Routes.Home}
+      initialRoute={Routes.Tabs}
       renderScene={this._renderScene}
       navigationBar={this._renderNavBar()}
     />
